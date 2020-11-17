@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:commonviews="clr-namespace:VideoScriptEditor.Views.Common"
+                    xmlns:timelinevm="clr-namespace:VideoScriptEditor.ViewModels.Timeline">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/VideoScriptEditor;component/Themes/TimelineSlider.xaml"/>
+        <ResourceDictionary Source="/VideoScriptEditor;component/Themes/Cropping.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- The number of pixels between each tick in the Video Timeline -->
+    <sys:Double x:Key="VideoTimelineTickSpacing">8.0</sys:Double>
+
+    <commonviews:EnumValueEqualityConverter x:Key="EnumValueEqualityConverter" />
+
+    <DataTemplate DataType="{x:Type timelinevm:TrackSegmentAdornerToolTipViewModel}">
+        <TextBlock Margin="2">
+            <Run Text="{Binding StartFrame, Mode=OneWay, StringFormat='Start Frame: {0}'}" /><LineBreak/>
+            <Run Text="{Binding EndFrame, Mode=OneWay, StringFormat='End Frame: {0}'}" />
+        </TextBlock>
+    </DataTemplate>
+</ResourceDictionary>

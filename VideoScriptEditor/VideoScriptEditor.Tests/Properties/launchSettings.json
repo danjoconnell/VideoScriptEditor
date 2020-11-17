@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VideoScriptEditor.Tests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

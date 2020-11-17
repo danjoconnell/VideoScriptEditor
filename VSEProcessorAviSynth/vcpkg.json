@@ -1,0 +1,9 @@
+{
+  "name": "vseprocessoravisynth",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "fmt",
+    "libyuv",
+    "tinyxml2"
+  ]
+}

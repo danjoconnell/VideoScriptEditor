@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="VideoScriptEditor.Views.Masking.MaskingVideoOverlayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"             
+             xmlns:geometry="clr-namespace:VideoScriptEditor.Geometry"
+             xmlns:commonviews="clr-namespace:VideoScriptEditor.Views.Common"
+             xmlns:viewmodels="clr-namespace:VideoScriptEditor.ViewModels.Masking.Shapes"
+             xmlns:local="clr-namespace:VideoScriptEditor.Views.Masking"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             Background="Transparent">
+    <UserControl.Resources>
+        <commonviews:VideoOverlayGeometrySizeConverter x:Key="VideoOverlayGeometrySizeConverter" />
+
+        <SolidColorBrush x:Key="MaskShapeFillBrush" Color="#BF000000" />
+
+        <DataTemplate DataType="{x:Type viewmodels:PolygonMaskShapeViewModel}">
+            <local:PolygonMaskShapeView Fill="{StaticResource MaskShapeFillBrush}" DataContext="{Binding}"
+                                        VideoOverlayElementWidth="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Canvas}}}"
+                                        VideoOverlayElementHeight="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Canvas}}}" />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewmodels:EllipseMaskShapeViewModel}">
+            <Path Fill="{StaticResource MaskShapeFillBrush}">
+                <Path.Data>
+                    <EllipseGeometry>
+                        <EllipseGeometry.Center>
+                            <MultiBinding Converter="{StaticResource VideoOverlayGeometrySizeConverter}">
+                                <Binding Path="CenterPoint" Mode="OneWay" />
+                                <Binding Path="DataContext.ScriptVideoContext.VideoFrameSize" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualHeight" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                            </MultiBinding>
+                        </EllipseGeometry.Center>
+                        <EllipseGeometry.RadiusX>
+                            <MultiBinding Converter="{StaticResource VideoOverlayGeometrySizeConverter}" ConverterParameter="{x:Static geometry:Axis.X}">
+                                <Binding Path="RadiusX" Mode="OneWay" />
+                                <Binding Path="DataContext.ScriptVideoContext.VideoFrameSize" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualHeight" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                            </MultiBinding>
+                        </EllipseGeometry.RadiusX>
+                        <EllipseGeometry.RadiusY>
+                            <MultiBinding Converter="{StaticResource VideoOverlayGeometrySizeConverter}" ConverterParameter="{x:Static geometry:Axis.Y}">
+                                <Binding Path="RadiusY" Mode="OneWay" />
+                                <Binding Path="DataContext.ScriptVideoContext.VideoFrameSize" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualHeight" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                            </MultiBinding>
+                        </EllipseGeometry.RadiusY>
+                    </EllipseGeometry>
+                </Path.Data>
+            </Path>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewmodels:RectangleMaskShapeViewModel}">
+            <Path Fill="{StaticResource MaskShapeFillBrush}">
+                <Path.Data>
+                    <RectangleGeometry>
+                        <RectangleGeometry.Rect>
+                            <MultiBinding Converter="{StaticResource VideoOverlayGeometrySizeConverter}">
+                                <Binding Path="Bounds" Mode="OneWay" />
+                                <Binding Path="DataContext.ScriptVideoContext.VideoFrameSize" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                                <Binding Path="ActualHeight" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" />
+                            </MultiBinding>
+                        </RectangleGeometry.Rect>
+                    </RectangleGeometry>
+                </Path.Data>
+            </Path>
+        </DataTemplate>
+    </UserControl.Resources>
+    <ItemsControl ItemsSource="{Binding ActiveSegments, Mode=OneWay}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <Canvas Background="Transparent" Loaded="OnOverlayCanvasLoaded" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+    </ItemsControl>
+</UserControl>

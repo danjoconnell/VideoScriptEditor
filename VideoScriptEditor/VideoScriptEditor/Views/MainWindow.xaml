@@ -1,0 +1,335 @@
+﻿<fluent:RibbonWindow
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluent="urn:fluent-ribbon"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime" 
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:root="clr-namespace:VideoScriptEditor"
+        xmlns:commonviews="clr-namespace:VideoScriptEditor.Views.Common"
+        xmlns:viewmodels="clr-namespace:VideoScriptEditor.ViewModels"
+        xmlns:commands="clr-namespace:VideoScriptEditor.Commands"
+        xmlns:timeline="clr-namespace:VideoScriptEditor.Views.Timeline"
+        x:Class="VideoScriptEditor.Views.MainWindow"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}" Height="768" Width="1024" MinWidth="800">
+    <fluent:RibbonWindow.InputBindings>
+        <KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding ApplicationCommands.UndoCommand}" />
+        <KeyBinding Key="Y" Modifiers="Ctrl" Command="{Binding ApplicationCommands.RedoCommand}" />
+        <KeyBinding Key="Right"
+                    Command="{Binding VideoFrameStepForwardCommand}"
+                    Modifiers="Control" />
+        <KeyBinding Key="Left"
+                    Command="{Binding VideoFrameStepBackwardCommand}"
+                    Modifiers="Control" />
+    </fluent:RibbonWindow.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <!--
+            Ribbon region
+        -->
+        <fluent:Ribbon Grid.Row="0">
+            <fluent:Ribbon.Menu>
+                <fluent:ApplicationMenu>
+                    <fluent:MenuItem Header="New Project" Command="{Binding NewProjectCommand}" />
+                    <fluent:MenuItem Header="Open Project" Icon="{StaticResource ProjectFolderOpen_16x_Image}" Command="{Binding OpenProjectCommand}" />
+                    <fluent:MenuItem Header="Save Project" Icon="{StaticResource Save_16x_Image}" Command="{Binding SaveProjectCommand}" CommandParameter="{x:Static commands:SaveCommandOptions.Save}" />
+                    <fluent:MenuItem Header="Save Project As" Icon="{StaticResource SaveAs_16x_Image}"  Command="{Binding SaveProjectCommand}" CommandParameter="{x:Static commands:SaveCommandOptions.SaveAs}" />
+                    <fluent:MenuItem Header="Close Project" Command="{Binding CloseProjectCommand}" />
+                </fluent:ApplicationMenu>
+            </fluent:Ribbon.Menu>
+            <fluent:Ribbon.QuickAccessItems>
+                <fluent:QuickAccessMenuItem IsChecked="True">
+                    <fluent:SplitButton Header="Undo" Icon="{StaticResource Undo_16x_Image}" ClosePopupOnMouseDown="True"
+                                        ItemsSource="{Binding Content.DataContext.UndoStack, ElementName=_videoDetailsPresenter, Mode=OneWay}"
+                                        DisplayMemberPath="Description" Command="{Binding ApplicationCommands.UndoCommand}">
+                        <fluent:SplitButton.ItemContainerStyle>
+                            <Style TargetType="{x:Type fluent:MenuItem}">
+                                <Setter Property="Command" Value="{Binding DataContext.ApplicationCommands.UndoCommand, RelativeSource={RelativeSource AncestorType={x:Type fluent:SplitButton}}}" />
+                                <Setter Property="CommandParameter" Value="{Binding}" />
+                            </Style>
+                        </fluent:SplitButton.ItemContainerStyle>
+                    </fluent:SplitButton>
+                </fluent:QuickAccessMenuItem>
+                <fluent:QuickAccessMenuItem IsChecked="True">
+                    <fluent:SplitButton Header="Redo" Icon="{StaticResource Redo_16x_Image}" ClosePopupOnMouseDown="True"
+                                        ItemsSource="{Binding Content.DataContext.RedoStack, ElementName=_videoDetailsPresenter, Mode=OneWay}"
+                                        DisplayMemberPath="Description" Command="{Binding ApplicationCommands.RedoCommand}">
+                        <fluent:SplitButton.ItemContainerStyle>
+                            <Style TargetType="{x:Type fluent:MenuItem}">
+                                <Setter Property="Command" Value="{Binding DataContext.ApplicationCommands.RedoCommand, RelativeSource={RelativeSource AncestorType={x:Type fluent:SplitButton}}}" />
+                                <Setter Property="CommandParameter" Value="{Binding}" />
+                            </Style>
+                        </fluent:SplitButton.ItemContainerStyle>
+                    </fluent:SplitButton>
+                </fluent:QuickAccessMenuItem>
+            </fluent:Ribbon.QuickAccessItems>
+            <!-- Manually setting the RibbonTabItem's RegionManager attached property here in order to correctly associate the Region with the parent View's RegionManager.
+                 Prism tries to do this automatically via RegionManagerRegistrationBehavior, walking the logical tree via the hosting element's Parent property to find the View's RegionManager (ref: RegionManagerRegistrationBehavior.FindRegionManager).
+                 In the case of RibbonTabItem, its Parent property is null, so the logical tree can't be walked and RegionManager isn't set. -->
+            <fluent:RibbonTabItem Header="Home" prism:RegionManager.RegionManager="{Binding Path=(prism:RegionManager.RegionManager), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                  prism:RegionManager.RegionName="{x:Static root:RegionNames.RibbonGroupRegion}">
+                <fluent:RibbonGroupBox Header="Script">
+                    <fluent:Button Header="Import" Icon="{StaticResource ImportFile_16x_Image}" LargeIcon="{StaticResource ImportFile_16x_Image}" Command="{Binding ImportScriptCommand}" />
+                </fluent:RibbonGroupBox>
+                <fluent:RibbonGroupBox Header="Video" IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}">
+                    <fluent:ComboBox ItemsSource="{Binding SourceVideoZoomLevels}" DisplayMemberPath="Label" SelectedItem="{Binding SourceVideoZoomLevel}" />
+                </fluent:RibbonGroupBox>
+                <fluent:RibbonGroupBox Header="Timeline" IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}">
+                    <fluent:DropDownButton Header="Zoom" Icon="{StaticResource TimelineZoom_24x_Image}" LargeIcon="{StaticResource TimelineZoom_24x_Image}">
+                        <Slider Height="100" Orientation="Vertical" Minimum="0" Maximum="100" SmallChange="1">
+                            <behaviors:Interaction.Triggers>
+                                <behaviors:EventTrigger EventName="ValueChanged">
+                                    <prism:InvokeCommandAction Command="{Binding TimelineCommands.SetTimelineZoomLevelCommand}" TriggerParameterPath="NewValue" />
+                                </behaviors:EventTrigger>
+                            </behaviors:Interaction.Triggers>
+                        </Slider>
+                    </fluent:DropDownButton>
+                    <Separator />
+                    <fluent:Button Header="Add track" Icon="{StaticResource Add_16x_Image}" LargeIcon="{StaticResource Add_16x_Image}" Command="{Binding TimelineCommands.AddTrackCommand}" />
+                    <fluent:Button Header="Remove track" Icon="{StaticResource Delete_12x_Image}" LargeIcon="{StaticResource Delete_12x_Image}" Command="{Binding TimelineCommands.RemoveTrackCommand}" />
+                    <Separator />
+                    <fluent:InRibbonGallery ItemWidth="32" ItemHeight="32" ResizeMode="Both" AllowDrop="True"
+                                            ItemsSource="{Binding Content.DataContext.AddableSegmentTypes, ElementName=_videoOverlayPresenter, Mode=OneWay}"
+                                            SelectedItem="{Binding TimelineCommands.AddTrackSegmentCommandParameters.SegmentTypeDescriptor}">
+                        <behaviors:Interaction.Behaviors>
+                            <timeline:DragRibbonGalleryItemsToTimelineBehavior DragItemActionData="{Binding TimelineCommands.AddTrackSegmentCommandParameters}" />
+                        </behaviors:Interaction.Behaviors>
+                        <fluent:InRibbonGallery.ItemTemplate>
+                            <DataTemplate DataType="{x:Type sys:Enum}">
+                                <Image ToolTip="{Binding}" commonviews:ImageAttachedProp.SourceResourceKey="{Binding ., StringFormat={}{0}_Image}" Stretch="UniformToFill" />
+                            </DataTemplate>
+                        </fluent:InRibbonGallery.ItemTemplate>
+                        <fluent:InRibbonGallery.ItemContainerStyle>
+                            <Style TargetType="{x:Type fluent:GalleryItem}">
+                                <Setter Property="Margin" Value="2" />
+                            </Style>
+                        </fluent:InRibbonGallery.ItemContainerStyle>
+                    </fluent:InRibbonGallery>
+                    <fluent:Spinner Header="Duration" SizeDefinition="Middle,Small" Value="{Binding TimelineCommands.AddTrackSegmentCommandParameters.FrameDuration}" Format="0 frames" />
+                    <fluent:Button Header="Add segment" Icon="{StaticResource Add_16x_Image}" SizeDefinition="Middle,Small" Command="{Binding TimelineCommands.AddTrackSegmentCommand}" />
+                    <fluent:Button Header="Split segment" Icon="{StaticResource Split_16x_Image}" LargeIcon="{StaticResource Split_16x_Image}" Command="{Binding TimelineCommands.SplitSelectedTrackSegmentCommand}" />
+                </fluent:RibbonGroupBox>
+            </fluent:RibbonTabItem>
+        </fluent:Ribbon>
+
+        <DockPanel Grid.Row="1" LastChildFill="True">
+            <!--
+                Sub-project tab region
+            -->
+            <TabControl x:Name="_subprojectTabControl" DockPanel.Dock="Left" TabStripPlacement="Left">
+                <TabControl.Style>
+                    <Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource {x:Type TabControl}}">
+                        <!-- Default to 'Video' tab -->
+                        <Setter Property="SelectedIndex" Value="0" />
+                        <Style.Triggers>
+                            <!-- Return to default 'Video' tab when Project/Script is closed as other tabs will be disabled -->
+                            <DataTrigger Binding="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}" Value="False">
+                                <Setter Property="SelectedIndex" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.Style>
+
+                <TabItem Header="Video" Tag="{x:Static viewmodels:SubprojectType.Video}" />
+                <TabItem Header="Cropping" Tag="{x:Static viewmodels:SubprojectType.Cropping}" IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}" />
+                <TabItem Header="Masking" Tag="{x:Static viewmodels:SubprojectType.Masking}" IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}" />
+            </TabControl>
+
+            <Grid DockPanel.Dock="Right" Margin="0,0,0,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="100"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--
+                    Timeline region
+                -->
+                <ContentPresenter Grid.Row="0" prism:RegionManager.RegionName="{x:Static root:RegionNames.VideoTimelineRegion}"
+                                  prism:RegionManager.RegionContext="{Binding Content.DataContext, ElementName=_videoOverlayPresenter, Mode=OneWay}" />
+
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="Black" ShowsPreview="True"/>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="7*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--
+                        Source video presentation and video overlay region
+                    -->
+                    <ScrollViewer x:Name="_sourceVideoScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="5">
+                        <Grid>
+                            <Grid.Style>
+                                <Style TargetType="{x:Type Grid}">
+                                    <Setter Property="Height" Value="Auto" />
+                                    <Setter Property="Width" Value="Auto" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SourceVideoZoomLevel.Value, Mode=OneWay, TargetNullValue=0}" Value="0">
+                                            <Setter Property="Height" Value="{Binding ViewportHeight, ElementName=_sourceVideoScrollViewer}" />
+                                            <Setter Property="Width" Value="{Binding ViewportWidth, ElementName=_sourceVideoScrollViewer}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+
+                            <commonviews:VideoFramePresenter x:Name="_sourceVideoPresenter" Stretch="Uniform" Width="{Binding SourceVideoPresentationWidth, Mode=OneWay}" Height="{Binding SourceVideoPresentationHeight, Mode=OneWay}" />
+                            <ContentPresenter x:Name="_videoOverlayPresenter" prism:RegionManager.RegionName="{x:Static root:RegionNames.VideoOverlayRegion}" HorizontalAlignment="{Binding HorizontalAlignment, ElementName=_sourceVideoPresenter}" VerticalAlignment="{Binding VerticalAlignment, ElementName=_sourceVideoPresenter}" Width="{Binding ActualWidth, ElementName=_sourceVideoPresenter}" Height="{Binding ActualHeight, ElementName=_sourceVideoPresenter}" />
+                        </Grid>
+                    </ScrollViewer>
+
+                    <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="Black" ShowsPreview="True"/>
+
+                    <!--
+                        Preview video presentation and video details region
+                    -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" MinHeight="150" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <commonviews:VideoFramePresenter x:Name="_outputVideoPreviewPresenter" Grid.Row="0" Stretch="Uniform" />
+
+                        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="Black" ShowsPreview="True"/>
+
+                        <ContentPresenter x:Name="_videoDetailsPresenter" Grid.Row="2" prism:RegionManager.RegionName="{x:Static root:RegionNames.VideoDetailsRegion}" />
+                    </Grid>
+                </Grid>
+
+                <!--
+                    Video playback commands, timeline commands and video position region
+                -->
+                <Grid Grid.Row="3" Margin="10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="210" />
+                        <ColumnDefinition MinWidth="70" />
+                        <ColumnDefinition MinWidth="105" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Video playback commands -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                <Setter Property="Width" Value="30" />
+                                <Setter Property="Margin" Value="2.5,0" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button Command="{Binding ToggleStartPauseVideoPlaybackCommand}">
+                            <Rectangle>
+                                <Rectangle.Style>
+                                    <Style TargetType="{x:Type Rectangle}">
+                                        <Setter Property="Stretch" Value="UniformToFill" />
+                                        <Setter Property="Fill" Value="{StaticResource Play_16x_Brush}" />
+                                        <Setter Property="ToolTip" Value="Play video" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ScriptVideoContext.IsVideoPlaying, Mode=OneWay}" Value="True">
+                                                <Setter Property="Fill" Value="{StaticResource Pause_16x_Brush}" />
+                                                <Setter Property="ToolTip" Value="Pause video" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+                        </Button>
+                        <Button Command="{Binding StopVideoPlaybackCommand}" ToolTip="Stop video">
+                            <Rectangle Fill="{StaticResource Stop_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button Command="{Binding VideoFrameStepBackwardCommand}" ToolTip="Frame step back">
+                            <Rectangle Fill="{StaticResource PreviousFrame_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button Command="{Binding VideoFrameStepForwardCommand}" ToolTip="Frame step forward">
+                            <Rectangle Fill="{StaticResource NextFrameArrow_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button Command="{Binding TimelineCommands.SeekPreviousKeyFrameInTrackCommand}" ToolTip="Seek previous key frame in track">
+                            <Rectangle Fill="{StaticResource KeyFramePrevious_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button Command="{Binding TimelineCommands.SeekNextKeyFrameInTrackCommand}" ToolTip="Seek next key frame in track">
+                            <Rectangle Fill="{StaticResource KeyFrameNext_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Timeline track commands -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                <Setter Property="Width" Value="30" />
+                                <Setter Property="Margin" Value="2.5,0" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button Command="{Binding TimelineCommands.AddTrackCommand}" ToolTip="Add track">
+                            <Rectangle Fill="{StaticResource Add_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button Command="{Binding TimelineCommands.RemoveTrackCommand}" ToolTip="Remove track">
+                            <Rectangle Fill="{StaticResource Delete_12x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Timeline segment commands -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                <Setter Property="Width" Value="30" />
+                                <Setter Property="Margin" Value="2.5,0" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button Command="{Binding TimelineCommands.AddTrackSegmentKeyFrameCommand}" ToolTip="Add track segment">
+                            <Rectangle Fill="{StaticResource AddKeyFrame_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button Command="{Binding TimelineCommands.RemoveTrackSegmentKeyFrameCommand}" ToolTip="Remove track segment">
+                            <Rectangle Fill="{StaticResource RemoveKeyFrame_16x_Brush}" Stretch="UniformToFill" />
+                        </Button>
+                        <Button>
+                            <behaviors:Interaction.Behaviors>
+                                <commonviews:DropDownMenuButtonBehavior />
+                            </behaviors:Interaction.Behaviors>
+                            <Button.Content>
+                                <Rectangle Fill="{StaticResource CopyKeyFrame_16x_Brush}" Stretch="UniformToFill" />
+                            </Button.Content>
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy from previous key frame" Command="{Binding TimelineCommands.CopyKeyFrameFromPreviousInTrackSegmentCommand}" />
+                                    <MenuItem Header="Copy from next key frame" Command="{Binding TimelineCommands.CopyKeyFrameFromNextInTrackSegmentCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="Copy key frame to clipboard" Command="{Binding TimelineCommands.CopyTrackSegmentKeyFrameToClipboardCommand}" />
+                                    <MenuItem Header="Paste key frame" Command="{Binding TimelineCommands.PasteTrackSegmentKeyFrameCommand}" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Video position display -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Rectangle Width="24" Fill="{StaticResource Filmstrip_16x_Brush}" />
+                        <TextBox Width="80" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Text="{Binding ScriptVideoContext.FrameNumber}"
+                                 IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}">
+                            <behaviors:Interaction.Behaviors>
+                                <commonviews:EnterKeyUpdatesTextBoxBindingBehavior />
+                            </behaviors:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Text="{Binding ScriptVideoContext.SeekableVideoFrameCount, StringFormat=/ {0}}" Margin="5,0,20,0" VerticalAlignment="Center" />
+                        <Rectangle Width="24" Fill="{StaticResource Time_24x_Brush}" Margin="20,0,0,0" />
+                        <TextBox Width="100" VerticalAlignment="Center" HorizontalContentAlignment="Center"
+                                 Text="{Binding ScriptVideoContext.VideoPosition, StringFormat='{}{0:hh\\:mm\\:ss\\.fff}'}"
+                                 IsEnabled="{Binding ScriptVideoContext.HasVideo, Mode=OneWay}">
+                            <behaviors:Interaction.Behaviors>
+                                <commonviews:EnterKeyUpdatesTextBoxBindingBehavior />
+                            </behaviors:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Text="{Binding ScriptVideoContext.VideoDuration, StringFormat='/ {0:hh\\:mm\\:ss\\.fff}'}" Margin="5,0,20,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</fluent:RibbonWindow>

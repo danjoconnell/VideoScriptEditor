@@ -1,0 +1,22 @@
+﻿<fluent:RibbonGroupBox x:Class="VideoScriptEditor.Views.Masking.MaskingRibbonGroupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluent="urn:fluent-ribbon"
+             xmlns:viewmodels="clr-namespace:VideoScriptEditor.ViewModels.Masking.Shapes"
+             xmlns:geometry="clr-namespace:VideoScriptEditor.Geometry"
+             Header="Masking">
+    <fluent:RibbonGroupBox Header="Shape Resize Mode">
+        <fluent:ToggleButton GroupName="ResizeShapeRibbonGroup" Icon="{StaticResource ResizeShapeBounds_16x_Image}"
+                             LargeIcon="{StaticResource ResizeShapeBounds_16x_Image}" ToolTip="Bounds"
+                             IsChecked="{Binding ShapeResizeMode, Mode=OneWay, Converter={StaticResource EnumValueEqualityConverter}, ConverterParameter={x:Static viewmodels:MaskShapeResizeMode.Bounds}}"
+                             Command="{Binding SetShapeResizeModeCommand}" CommandParameter="{x:Static viewmodels:MaskShapeResizeMode.Bounds}" />
+        <fluent:ToggleButton GroupName="ResizeShapeRibbonGroup" Icon="{StaticResource ResizeShapePoints_18x_Image}"
+                             LargeIcon="{StaticResource ResizeShapePoints_18x_Image}" ToolTip="Points"
+                             IsChecked="{Binding ShapeResizeMode, Mode=OneWay, Converter={StaticResource EnumValueEqualityConverter}, ConverterParameter={x:Static viewmodels:MaskShapeResizeMode.Points}}"
+                             Command="{Binding SetShapeResizeModeCommand}" CommandParameter="{x:Static viewmodels:MaskShapeResizeMode.Points}" />
+    </fluent:RibbonGroupBox>
+    <fluent:Button Header="Flip Horizontal" Icon="{StaticResource FlipHorizontal_16x_Image}" LargeIcon="{StaticResource FlipHorizontal_16x_Image}"
+                   Command="{Binding FlipSelectedShapeCommand}" CommandParameter="{x:Static geometry:Axis.X}" />
+    <fluent:Button Header="Flip Vertical" Icon="{StaticResource FlipVertical_16x_Image}" LargeIcon="{StaticResource FlipVertical_16x_Image}"
+                   Command="{Binding FlipSelectedShapeCommand}" CommandParameter="{x:Static geometry:Axis.Y}" />
+</fluent:RibbonGroupBox>

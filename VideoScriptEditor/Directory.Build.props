@@ -1,0 +1,11 @@
+﻿<Project>
+  <PropertyGroup>
+    <Product>Video Script Editor</Product>
+    <Copyright>Copyright © 2020 Daniel O'Connell</Copyright>
+    <Version>0.1.0</Version>
+    <Authors>Daniel O'Connell</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/danjoconnell/VideoScriptEditor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>

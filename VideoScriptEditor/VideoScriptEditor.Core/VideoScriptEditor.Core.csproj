@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Platforms>x86;x64</Platforms>
+	  <OutputPath>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Generates warning CS1591: Missing XML comment for publicly visible type or member. Warning suppressed above. -->
+    <Compile Include="$(PkgCodeBits_OrderedObservableCollection)\content\CodeBits\OrderedObservableCollection.cs" Link="ThirdParty\CodeBits\OrderedObservableCollection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeBits.OrderedObservableCollection" Version="1.1.0">
+      <GeneratePathProperty>true</GeneratePathProperty>
+    </PackageReference>
+    <PackageReference Include="Prism.Core" Version="8.0.0.1909" />
+  </ItemGroup>
+
+</Project>

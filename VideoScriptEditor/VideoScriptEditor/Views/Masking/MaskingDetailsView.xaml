@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="VideoScriptEditor.Views.Masking.MaskingDetailsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewmodels="clr-namespace:VideoScriptEditor.ViewModels.Masking.Shapes"
+             xmlns:commonviews="clr-namespace:VideoScriptEditor.Views.Common"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="14pt" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Selected Shape" FontSize="12pt" Foreground="#EFEFEF" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ContentPresenter Content="{Binding SelectedSegment}">
+                <ContentPresenter.Resources>
+                    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="IsEnabled" Value="{Binding CanBeEdited, Mode=OneWay, FallbackValue=False}" />
+                    </Style>
+
+                    <DataTemplate DataType="{x:Type viewmodels:MaskShapeViewModelBase}" x:Key="MaskShapeBoundsTemplate">
+                        <commonviews:RectEditBox BoundRect="{Binding Bounds, Mode=TwoWay}" />
+                    </DataTemplate>
+                    
+                    <DataTemplate DataType="{x:Type viewmodels:PolygonMaskShapeViewModel}" x:Key="MaskShapePolygonPointsTemplate">
+                        <ItemsControl x:Name="PolygonPointsItemsControl" ItemsSource="{Binding Points}">
+                            <ItemsControl.Resources>
+                                <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                                    <Setter Property="IsEnabled" Value="{Binding DataContext.CanBeEdited, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}, Mode=OneWay, FallbackValue=False}" />
+                                </Style>
+                            </ItemsControl.Resources>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type Point}">
+                                    <!-- Using Tag to store ref to PolygonMaskShapeViewModel -->
+                                    <Grid Tag="{Binding DataContext, ElementName=PolygonPointsItemsControl, Mode=OneWay}" Loaded="OnPolygonMaskShapePointGridLoaded">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="30" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Label x:Name="PART_PointNumberLabel" Grid.Column="0" Target="{Binding ElementName=PART_PointEditBox, Mode=OneWay}" VerticalAlignment="Center" />
+                                        <commonviews:PointEditBox x:Name="PART_PointEditBox" Grid.Column="1" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DataTemplate>
+                    
+                    <DataTemplate DataType="{x:Type viewmodels:EllipseMaskShapeViewModel}" x:Key="MaskShapeEllipsePointsTemplate">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="40" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Row="0" Grid.Column="0" Target="{Binding ElementName=CenterPointBox}" VerticalAlignment="Center" Content="Center:" />
+                            <commonviews:PointEditBox x:Name="CenterPointBox" Grid.Row="0" Grid.Column="1" BoundPoint="{Binding CenterPoint, Mode=TwoWay}" />
+
+                            <Label Grid.Row="1" Grid.Column="0" Target="{Binding ElementName=RadiusEditGrid, Mode=OneWay}" VerticalAlignment="Center" Content="Radius:" />
+                            <Grid x:Name="RadiusEditGrid" Grid.Row="1" Grid.Column="1" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Label Grid.Column="0" Target="{Binding ElementName=RadiusXTextBox}" VerticalAlignment="Center" HorizontalAlignment="Right" Content="X" />
+                                <TextBox x:Name="RadiusXTextBox" Grid.Column="1" Margin="5" MinWidth="50" Text="{Binding RadiusX, Mode=TwoWay}" />
+                                <Label Grid.Column="2" Target="{Binding ElementName=RadiusYTextBox}" VerticalAlignment="Center" HorizontalAlignment="Right" Content="Y" />
+                                <TextBox x:Name="RadiusYTextBox" Grid.Column="3" Margin="5" MinWidth="50" Text="{Binding RadiusY, Mode=TwoWay}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ContentPresenter.Resources>
+                <ContentPresenter.Style>
+                    <!-- Using a sequence of DataTriggers here for dynamically changing the ContentTemplate rather than a custom DataTemplateSelector as DataTemplateSelector.SelectTemplate is only called when the Content value itself changes.
+                         In this case, the ContentTemplate has to be able to be switched between the 'Bounds' template and a 'Points' template **for the same bound Content** whenever the IMaskingViewModel.ShapeResizeMode value changes.
+                         Using a sequence of DataTriggers is the accepted work-around for this type of scenario. -->
+                    <Style TargetType="{x:Type ContentPresenter}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.ShapeResizeMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollViewer}}}" Value="{x:Static viewmodels:MaskShapeResizeMode.Bounds}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource MaskShapeBoundsTemplate}" />
+                            </DataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding DataContext.ShapeResizeMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollViewer}}}" Value="{x:Static viewmodels:MaskShapeResizeMode.Points}" />
+                                    <Condition Binding="{Binding ShapeType}" Value="{x:Static viewmodels:MaskShapeType.Polygon}" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="ContentTemplate" Value="{StaticResource MaskShapePolygonPointsTemplate}" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding DataContext.ShapeResizeMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollViewer}}}" Value="{x:Static viewmodels:MaskShapeResizeMode.Points}" />
+                                    <Condition Binding="{Binding ShapeType}" Value="{x:Static viewmodels:MaskShapeType.Ellipse}" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="ContentTemplate" Value="{StaticResource MaskShapeEllipsePointsTemplate}" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentPresenter.Style>
+            </ContentPresenter>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,105 @@
+﻿<Control x:Class="VideoScriptEditor.Views.Timeline.VideoTimelineSegment"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:common="clr-namespace:VideoScriptEditor.Views.Common"
+             xmlns:local="clr-namespace:VideoScriptEditor.Views.Timeline"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Control.Resources>
+        <!-- Converter to help bind the Width of the Thumb and Height of the Rectangle elements that
+             make up the control border to their corresponding BorderThickness property values. -->
+        <common:ThicknessToBindablePropertyConverter x:Key="ThicknessToBindablePropertyConverter" />
+
+        <!-- Converter calculates the Canvas.Left and Canvas.Top positions for key frame elements. -->
+        <local:VideoTimelineKeyFramePositionConverter x:Key="VideoTimelineKeyFramePositionConverter" />
+
+        <Style TargetType="{x:Type Thumb}" x:Key="LeftRightBorderThumbStyle">
+            <Setter Property="Cursor" Value="SizeWE" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Rectangle Width="{TemplateBinding Width}" Fill="{TemplateBinding Background}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type Rectangle}" x:Key="KeyFrameRectangleStyle">
+            <Setter Property="Width" Value="{StaticResource VideoTimelineTickSpacing}" />
+            <Setter Property="Height" Value="14" />
+            <Setter Property="Fill" Value="{StaticResource InactiveKeyFrame_Brush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive, Mode=OneWay}" Value="True">
+                    <Setter Property="Fill" Value="{StaticResource ActiveKeyFrame_Brush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Control.Resources>
+    <Control.Template>
+        <ControlTemplate>
+            <DockPanel Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                <!-- Left and right border Thumbs allow expanding and contracting the segment's start and end frame position -->
+                <Thumb DockPanel.Dock="Left" Style="{StaticResource LeftRightBorderThumbStyle}" Width="{TemplateBinding BorderThickness, Converter={StaticResource ThicknessToBindablePropertyConverter}, ConverterParameter='Left'}" Background="{TemplateBinding BorderBrush}" DragDelta="OnBorderThumbElementDragDelta" DragCompleted="OnBorderThumbElementDragCompleted" />
+                <Rectangle DockPanel.Dock="Top" Height="{TemplateBinding BorderThickness, Converter={StaticResource ThicknessToBindablePropertyConverter}, ConverterParameter='Top'}" Fill="{TemplateBinding BorderBrush}" />
+                <Thumb DockPanel.Dock="Right" Style="{StaticResource LeftRightBorderThumbStyle}" Width="{TemplateBinding BorderThickness, Converter={StaticResource ThicknessToBindablePropertyConverter}, ConverterParameter='Right'}" Background="{TemplateBinding BorderBrush}" DragDelta="OnBorderThumbElementDragDelta" DragCompleted="OnBorderThumbElementDragCompleted" />
+                <Rectangle DockPanel.Dock="Bottom" Height="{TemplateBinding BorderThickness, Converter={StaticResource ThicknessToBindablePropertyConverter}, ConverterParameter='Bottom'}" Fill="{TemplateBinding BorderBrush}" />
+                <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" FontSize="10" FontWeight="ExtraBold" TextTrimming="CharacterEllipsis" Text="{Binding Name}" />
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding KeyFrameViewModels}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Using Tag to store ref to Segment ViewModel for ContextMenu commands as per https://stackoverflow.com/questions/3668654/relativesource-binding-from-a-tooltip-or-contextmenu/3668699#3668699 -->
+                                <Rectangle Style="{StaticResource KeyFrameRectangleStyle}" ToolTip="{Binding FrameNumber, Mode=OneWay}" Tag="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VideoTimelineSegment}}}" PreviewMouseLeftButtonDown="OnKeyFrameRectanglePreviewMouseLeftButtonDown">
+                                    <Rectangle.ContextMenu>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Copy key frame" Command="{Binding PlacementTarget.Tag.CopyKeyFrameToClipboardCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" CommandParameter="{Binding}" />
+                                            <MenuItem Header="Paste key frame" Command="{Binding PlacementTarget.Tag.PasteKeyFrameCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" CommandParameter="{Binding}" />
+                                            <Separator />
+                                            <MenuItem Header="Remove key frame" Command="{Binding PlacementTarget.Tag.RemoveKeyFrameCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" CommandParameter="{Binding}" />
+                                        </ContextMenu>
+                                    </Rectangle.ContextMenu>
+                                </Rectangle>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style>
+                                <Setter Property="Canvas.Left">
+                                    <Setter.Value>
+                                        <MultiBinding Mode="OneWay" Converter="{StaticResource VideoTimelineKeyFramePositionConverter}" ConverterParameter="Left">
+                                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type DockPanel}}" Mode="OneWay" />
+                                            <Binding Path="DataContext.StartFrame" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" Mode="OneWay" />
+                                            <Binding Path="DataContext.EndFrame" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" Mode="OneWay" />
+                                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource Self}" Mode="OneWay" />
+                                            <Binding Path="FrameNumber" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Canvas.Top">
+                                    <Setter.Value>
+                                        <MultiBinding Mode="OneWay" Converter="{StaticResource VideoTimelineKeyFramePositionConverter}" ConverterParameter="Top">
+                                            <Binding Path="ActualHeight" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Canvas}}" Mode="OneWay" />
+                                            <Binding Path="ActualHeight" RelativeSource="{RelativeSource Self}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                    </ItemsControl>
+                </Grid>
+            </DockPanel>
+        </ControlTemplate>
+    </Control.Template>
+</Control>

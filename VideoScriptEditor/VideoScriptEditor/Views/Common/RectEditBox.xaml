@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="VideoScriptEditor.Views.Common.RectEditBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="50" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0" Target="{Binding ElementName=_rectLeftTextBox, Mode=OneWay}" VerticalAlignment="Center" Content="Left:" />
+        <TextBox x:Name="_rectLeftTextBox" Grid.Row="0" Grid.Column="1" Margin="0,5,5,5" />
+
+        <Label Grid.Row="0" Grid.Column="2" Target="{Binding ElementName=_rectTopTextBox, Mode=OneWay}" VerticalAlignment="Center" Content="Top:" />
+        <TextBox x:Name="_rectTopTextBox" Grid.Row="0" Grid.Column="3"  Margin="0,5" />
+
+        <Label Grid.Row="1" Grid.Column="0" Target="{Binding ElementName=_rectWidthTextBox, Mode=OneWay}" VerticalAlignment="Center" Content="Width:" />
+        <TextBox x:Name="_rectWidthTextBox" Grid.Row="1" Grid.Column="1" Margin="0,5,5,5" />
+
+        <Label Grid.Row="1" Grid.Column="2" Target="{Binding ElementName=_rectHeightTextBox, Mode=OneWay}" VerticalAlignment="Center" Content="Height:" />
+        <TextBox x:Name="_rectHeightTextBox" Grid.Row="1" Grid.Column="3" Margin="0,5" />
+    </Grid>
+</UserControl>

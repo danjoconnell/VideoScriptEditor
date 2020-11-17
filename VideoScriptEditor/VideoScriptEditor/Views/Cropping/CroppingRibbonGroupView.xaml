@@ -1,0 +1,8 @@
+﻿<fluent:RibbonGroupBox x:Class="VideoScriptEditor.Views.Cropping.CroppingRibbonGroupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluent="urn:fluent-ribbon"
+             Header="Cropping">
+    <fluent:Button Icon="{StaticResource AlignStretchVertical_16x_Image}" LargeIcon="{StaticResource AlignStretchVertical_16x_Image}" Header="Center Horizontally" Command="{Binding CenterSegmentHorizontallyCommand}" />
+    <fluent:Button Icon="{StaticResource AlignStretchHorizontal_16x_Image}" LargeIcon="{StaticResource AlignStretchHorizontal_16x_Image}" Header="Center Vertically" Command="{Binding CenterSegmentVerticallyCommand}" />
+</fluent:RibbonGroupBox>
