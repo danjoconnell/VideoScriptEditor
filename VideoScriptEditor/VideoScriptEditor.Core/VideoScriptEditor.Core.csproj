@@ -15,14 +15,14 @@
 
   <ItemGroup>
     <!-- Generates warning CS1591: Missing XML comment for publicly visible type or member. Warning suppressed above. -->
-    <Compile Include="$(PkgCodeBits_OrderedObservableCollection)\content\CodeBits\OrderedObservableCollection.cs" Link="ThirdParty\CodeBits\OrderedObservableCollection.cs" />
+    <Compile Remove="$(PkgCodeBits_OrderedObservableCollection)\content\CodeBits\OrderedObservableCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeBits.OrderedObservableCollection" Version="1.1.0">
+    <PackageReference Include="CodeBits.OrderedObservableCollection" Version="2.0.0">
       <GeneratePathProperty>true</GeneratePathProperty>
     </PackageReference>
-    <PackageReference Include="Prism.Core" Version="8.0.0.1909" />
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
   </ItemGroup>
 
 </Project>

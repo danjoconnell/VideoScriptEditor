@@ -1,11 +1,5 @@
 #pragma once
 
-// Disable warnings such as 'C4691: 'System::Object': type referenced was expected in unreferenced assembly 'netstandard', type defined in current translation unit used instead'
-// when importing types from Prism.dll.
-// These warnings should be fixed when the Prism team updates their projects to properly support .Net 5.
-#pragma warning( push )
-#pragma warning( disable : 4691 )
-
 namespace VideoScriptEditor::Services::ScriptVideo
 {
     /// <summary>
@@ -64,5 +58,3 @@ namespace VideoScriptEditor::Services::ScriptVideo
         void SetScriptFileSourceInternal(System::String^ scriptFileSource);
     };
 }
-
-#pragma warning( pop )
