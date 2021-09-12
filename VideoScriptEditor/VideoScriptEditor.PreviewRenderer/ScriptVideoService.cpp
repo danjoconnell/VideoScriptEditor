@@ -290,7 +290,7 @@ namespace VideoScriptEditor::Services::ScriptVideo
         }
 
         // Remove any excess items not keyed to an active Track number
-        _nativeController->RemoveInactiveMaskingPreviewItems(activeTrackNumbers);
+        _nativeController->RemoveInactiveCroppingPreviewItems(activeTrackNumbers);
     }
 
     void ScriptVideoService::CloseScriptCore()
