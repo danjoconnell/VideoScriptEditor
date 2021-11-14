@@ -15,12 +15,8 @@
     <PackageReference Include="WPFThemes.DarkBlend" Version="1.0.8" />
   </ItemGroup>
   <ItemGroup>
+     <ProjectReference Include="..\..\Dependencies\muf\src\MonitoredUndo\MonitoredUndo.csproj" />
      <ProjectReference Include="..\VideoScriptEditor.Core\VideoScriptEditor.Core.csproj" />
      <ProjectReference Include="..\VideoScriptEditor.PreviewRenderer\VideoScriptEditor.PreviewRenderer.vcxproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="MonitoredUndo">
-      <HintPath>..\packages\MonitoredUndo\MonitoredUndo.dll</HintPath>
-    </Reference>
   </ItemGroup>
  </Project>
