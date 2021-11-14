@@ -1,3 +1,7 @@
 [submodule "Dependencies/AviSynthPlus"]
 	path = Dependencies/AviSynthPlus
 	url = https://github.com/AviSynth/AviSynthPlus.git
+[submodule "Dependencies/muf"]
+	path = Dependencies/muf
+	url = https://github.com/danjoconnell/muf.git
+	branch = service-interfaces-observablestack
